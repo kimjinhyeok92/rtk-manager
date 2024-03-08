@@ -1,33 +1,26 @@
 package application;
 
+import com.fazecast.jSerialComm.SerialPort;
+
 import java.util.Arrays;
-
-
-import com.fazecast.jSerialComm.*;
-
-
-
 
 public class DataRequest {
 
     private SerialPort comPort;
-    
 
-
-    public void setSerialport(String selectedSerial1, int selectedBaudrateValue1) {
+    public void setSerialport(String selectedSerial, int selectedBaudrate) {
         try {
-            this.comPort = SerialPort.getCommPort(selectedSerial1);
-            this.comPort.setBaudRate(selectedBaudrateValue1);
+            this.comPort = SerialPort.getCommPort(selectedSerial);
+            this.comPort.setBaudRate(selectedBaudrate);
 
-            // 포트를 사용하기 전에 열기
             if (comPort.openPort()) {
-                System.out.println("시리얼 포트가 성공적으로 열렸습니다.");
+                System.out.println("Serial port successfully opened.");
             } else {
-                System.err.println("시리얼 포트를 열던 중 오류가 발생했습니다.");
+                System.err.println("Error opening the serial port.");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("SerialPort 생성 중 오류 발생: " + e.getMessage());
+            System.err.println("Error creating SerialPort: " + e.getMessage());
         }
     }
 
@@ -36,101 +29,84 @@ public class DataRequest {
  // sendRTCM 메서드
     public void sendRTCM() {
         try {
-            if (comPort != null && comPort.isOpen()) {
+            if (isSerialPortOpen()) {
                 byte[] RTCMStc = CommandFactory.RTCMStc();
-
-                // Calculate checksum
-                byte[] calculatedChecksum = ChecksumCalculator.calculateChecksum(RTCMStc);
-                
-//                for (byte b : calculatedChecksum) {
-//                    System.out.printf("%02X ", b);
-//                }
-//                System.out.println();
-                
-                // Add checksum to the data
-                byte[] RTCMStcWithChecksum = new byte[RTCMStc.length + 2];
-                System.arraycopy(RTCMStc, 0, RTCMStcWithChecksum, 0, RTCMStc.length);
-                RTCMStcWithChecksum[RTCMStcWithChecksum.length - 2] = calculatedChecksum[0];
-                RTCMStcWithChecksum[RTCMStcWithChecksum.length - 1] = calculatedChecksum[1];
-                
-                for (byte b : RTCMStcWithChecksum) {
-                    System.out.printf("%02X ", b);
-                }
-                System.out.println();
-                
-                System.out.println("Checksum (RTCM): " +
-                        String.format("%02X ", calculatedChecksum[0]) +
-                        String.format("%02X ", calculatedChecksum[1]));
-                System.out.println("sendingData (RTCM): " +
-                        String.format("%02X ", RTCMStcWithChecksum[6]) +
-                        String.format("%02X ", RTCMStcWithChecksum[7]));
-
-              //  int bytesWritten = comPort.writeBytes(RTCMStc, RTCMStc.length);
-                int bytesWritten = comPort.writeBytes(RTCMStcWithChecksum, RTCMStcWithChecksum.length);
-                System.out.println("Bytes Written (RTCM): " + bytesWritten);
-
-                System.out.println("RTCM 데이터 전송 완료");
-                System.out.println();
+                sendCommandWithChecksum("RTCM", RTCMStc);
             } else {
-                System.err.println("시리얼 포트가 열려있지 않습니다.");
+                handleClosedSerialPortError();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("RTCM 호출 중 예외가 발생했습니다: " + e.getMessage());
+            handleException("RTCM 호출 중 예외 발생", e);
         }
     }
 
- // sendSurveyin 메서드
+    // sendSurveyin 메서드
     public void sendSurveyin() {
         try {
-            if (comPort != null && comPort.isOpen()) {
+            if (isSerialPortOpen()) {
                 byte[] surveyinStc = CommandFactory.SurveyinStc();
-
-                // Calculate checksum
-                byte[] calculatedChecksum = ChecksumCalculator.calculateChecksum(surveyinStc);
-
-                
-//                for (byte b : calculatedChecksum) {
-//                    System.out.printf("%02X ", b);
-//                }
-//                System.out.println();
-                
-                // Add checksum to the data
-                byte[] surveyinStcWithChecksum = new byte[surveyinStc.length + 2];
-                System.arraycopy(surveyinStc, 0, surveyinStcWithChecksum, 0, surveyinStc.length);
-                surveyinStcWithChecksum[surveyinStcWithChecksum.length - 2] = calculatedChecksum[0];
-                surveyinStcWithChecksum[surveyinStcWithChecksum.length - 1] = calculatedChecksum[1];
-                
-                for (byte b : surveyinStcWithChecksum) {
-                    System.out.printf("%02X ", b);
-                }
-                System.out.println();
-
-                
-                
-                
-                System.out.println("Checksum (Surveyin): " +
-                        String.format("%02X ", calculatedChecksum[0]) +
-                        String.format("%02X ", calculatedChecksum[1]));
-                System.out.println("sendingData (Surveyin): " +
-                        String.format("%02X ", surveyinStcWithChecksum[6]) +
-                        String.format("%02X ", surveyinStcWithChecksum[7]));
-
-                //int bytesWritten = comPort.writeBytes(surveyinStc, surveyinStc.length);
-                int bytesWritten = comPort.writeBytes(surveyinStcWithChecksum, surveyinStcWithChecksum.length);
-                System.out.println("Bytes Written (Surveyin): " + bytesWritten);
-
-                System.out.println("Surveyin 데이터 전송 완료");
-                System.out.println();
+                sendCommandWithChecksum("Surveyin", surveyinStc);
             } else {
-                System.err.println("시리얼 포트가 열려있지 않습니다.");
+                handleClosedSerialPortError();
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Surveyin 호출 중 오류가 발생했습니다." + e.getMessage());
+            handleException("Surveyin 호출 중 오류 발생", e);
         }
     }
 
+    private void sendCommandWithChecksum(String commandType, byte[] command) {
+        byte[] calculatedChecksum = ChecksumCalculator.calculateChecksum(command);
+        byte[] commandWithChecksum = Arrays.copyOf(command, command.length + 2);
+        
+        System.arraycopy(calculatedChecksum, 0, commandWithChecksum, command.length, 2);
+        
+        printChecksumAndData(commandType, calculatedChecksum, commandWithChecksum);
+
+        int bytesWritten = comPort.writeBytes(commandWithChecksum, commandWithChecksum.length);
+        System.out.println("Bytes Written (" + commandType + "): " + bytesWritten);
+
+        System.out.println(commandType + " 데이터 전송 완료\n");
+    }
+
+    private void printChecksumAndData(String commandType, byte[] calculatedChecksum, byte[] commandWithChecksum) {
+        System.out.println("Checksum (" + commandType + "): " +
+                String.format("%02X ", calculatedChecksum[0]) +
+                String.format("%02X ", calculatedChecksum[1]));
+
+        System.out.println("Sending Data (" + commandType + "): " +
+                String.format("%02X ", commandWithChecksum[commandWithChecksum.length - 2]) +
+                String.format("%02X ", commandWithChecksum[commandWithChecksum.length - 1]));
+    }
+
+    private void handleException(String message, Exception e) {
+        e.printStackTrace();
+        System.err.println(message + ": " + e.getMessage());
+    }
+
+    private boolean isSerialPortOpen() {
+        return comPort != null && comPort.isOpen();
+    }
+
+    private void handleClosedSerialPortError() {
+        System.err.println("시리얼 포트가 열려있지 않습니다.");
+    }
+
+    public String readData() {
+        StringBuilder receivedData = new StringBuilder();
+        try {
+            while (comPort.bytesAvailable() > 0) {
+                byte[] readBuffer = new byte[comPort.bytesAvailable()];
+                int numRead = comPort.readBytes(readBuffer, readBuffer.length);
+                receivedData.append("data size : ").append(numRead).append("byte\n");
+                parseData(readBuffer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error while dividing tokens: " + e.getMessage());
+        }
+        return receivedData.toString();
+    }
+    
 
  // parseRTCM, parseUBX, parseNMEA 메서드 
  private void parseRTCM(byte[] token) {
@@ -157,30 +133,6 @@ public class DataRequest {
      System.out.println();
  }
 
- public String readData() {
-	    StringBuilder receivedData = new StringBuilder(); // 수신된 데이터를 저장할 StringBuilder
-
-	    try {
-	        while (comPort.bytesAvailable() > 0) {
-	            byte[] readBuffer = new byte[comPort.bytesAvailable()];
-	            int numRead = comPort.readBytes(readBuffer, readBuffer.length);
-	        
-	    //        System.out.println("Received data: " + Arrays.toString(readBuffer));
-
-	           
-                receivedData.append("data size : ").append(numRead).append("byte\n");
-                
-               
-                
-	            parseData(readBuffer); // 수정된 부분
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        System.err.println("token을 나누던 중 오류가 발생했습니다." + e.getMessage());
-	    }
-
-	    return receivedData.toString();
-	}
 
 	private void parseData(byte[] data) {
 	    int type = 0;

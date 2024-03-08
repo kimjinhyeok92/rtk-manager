@@ -11,13 +11,13 @@ public class Main extends Application {
     public void start(Stage stage) {
         try {
         	
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("RTKTool.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("RTKManager.fxml"));
             Parent root = loader.load();
 
             Scene scene = new Scene(root);
             stage.setScene(scene);
             
-            stage.setTitle("RTKTool Application");
+            stage.setTitle("RTKManager Application");
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
