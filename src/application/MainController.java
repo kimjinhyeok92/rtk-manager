@@ -33,7 +33,7 @@ public class MainController {
     private Label dataLabel;
     
     // RTCMRequest 객체 생성
-    private DataRequest rtcMRequest = new DataRequest(); 
+    private DataRequest dataRequest = new DataRequest(); 
     
     // 백그라운드 스레드에서 데이터를 계속 읽고 UI 업데이트
     private Thread backgroundThread;
@@ -79,12 +79,12 @@ public class MainController {
                 System.out.println("Selected Baudrate: " + selectedBaudrate1);
 
                 // RTCMRequest 객체 생성 및 초기화
-                rtcMRequest = new DataRequest();
-                rtcMRequest.setSerialport(selectedSerial1, selectedBaudrate1);
+                dataRequest = new DataRequest();
+                dataRequest.setSerialport(selectedSerial1, selectedBaudrate1);
                 
 
-                rtcMRequest.sendRTCM();
-                rtcMRequest.sendSurveyin();
+                dataRequest.sendRTCM();
+                dataRequest.sendSurveyin();
 
                 // CheckBox 상태에 따라 추가적인 동작 수행
                 boolean isDataCheckBoxSelected = dataCheckBox.isSelected();
@@ -111,7 +111,7 @@ public class MainController {
                 while (isRunning) {
                 	String receivedData;
                 	// 수신된 데이터 처리
-                    receivedData = rtcMRequest.readData();
+                    receivedData = dataRequest.readData();
                     
                  //   System.out.println("ReceivedData: " + receivedData);
                     Platform.runLater(() -> dataLabel.setText(receivedData));
@@ -135,8 +135,8 @@ public class MainController {
         if (backgroundThread != null && backgroundThread.isAlive()) {
             backgroundThread.interrupt();
             // Serial 포트 닫기
-            if (rtcMRequest != null) {
-                rtcMRequest.closePort();
+            if (dataRequest != null) {
+                dataRequest.closePort();
             }
         }
     }
