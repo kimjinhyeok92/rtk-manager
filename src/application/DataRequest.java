@@ -8,7 +8,7 @@ import com.fazecast.jSerialComm.*;
 
 
 
-public class RTCMRequest {
+public class DataRequest {
 
     private SerialPort comPort;
     
@@ -37,7 +37,7 @@ public class RTCMRequest {
     public void sendRTCM() {
         try {
             if (comPort != null && comPort.isOpen()) {
-                byte[] RTCMStc = StreamCommandFactory.RTCMStc();
+                byte[] RTCMStc = CommandFactory.RTCMStc();
 
                 // Calculate checksum
                 byte[] calculatedChecksum = ChecksumCalculator.calculateChecksum(RTCMStc);
@@ -84,7 +84,7 @@ public class RTCMRequest {
     public void sendSurveyin() {
         try {
             if (comPort != null && comPort.isOpen()) {
-                byte[] surveyinStc = StreamCommandFactory.SurveyinStc();
+                byte[] surveyinStc = CommandFactory.SurveyinStc();
 
                 // Calculate checksum
                 byte[] calculatedChecksum = ChecksumCalculator.calculateChecksum(surveyinStc);
@@ -242,4 +242,7 @@ public class RTCMRequest {
         }
     }
 	}
+
+
+
 	

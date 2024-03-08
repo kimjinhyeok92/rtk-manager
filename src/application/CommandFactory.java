@@ -1,6 +1,6 @@
 package application;
 
-public class StreamCommandFactory {
+public class CommandFactory {
 
     public static byte[] RTCMStc() {
         // RTCM 데이터 스트림을 활성화하는 UBX 명령 생성
@@ -36,8 +36,6 @@ public class StreamCommandFactory {
                 
                 // 체크섬 (2 바이트)는 나중에 추가될 것입니다
         };
-    }
-    
-    
+    }  
 }
 

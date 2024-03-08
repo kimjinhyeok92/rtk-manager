@@ -33,7 +33,7 @@ public class MainController {
     private Label dataLabel;
     
     // RTCMRequest 객체 생성
-    private RTCMRequest rtcMRequest = new RTCMRequest(); 
+    private DataRequest rtcMRequest = new DataRequest(); 
     
     // 백그라운드 스레드에서 데이터를 계속 읽고 UI 업데이트
     private Thread backgroundThread;
@@ -79,7 +79,7 @@ public class MainController {
                 System.out.println("Selected Baudrate: " + selectedBaudrate1);
 
                 // RTCMRequest 객체 생성 및 초기화
-                rtcMRequest = new RTCMRequest();
+                rtcMRequest = new DataRequest();
                 rtcMRequest.setSerialport(selectedSerial1, selectedBaudrate1);
                 
 
