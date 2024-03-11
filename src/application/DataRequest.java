@@ -38,8 +38,25 @@ public class DataRequest {
     public void sendRTCM() {
         try {
             if (isSerialPortOpen()) {
-                byte[] RTCMStc = CommandFactory.RTCMStc();
-                sendCommandWithChecksum("RTCM", RTCMStc);
+                
+                byte[] rtcCommand1005 = CommandFactory.RTCM1005();
+                sendCommandWithChecksum("RTCM1005", rtcCommand1005);
+
+                byte[] rtcCommand1077 = CommandFactory.RTCM1077();
+                sendCommandWithChecksum("RTCM1077", rtcCommand1077);
+
+                byte[] rtcCommand1087 = CommandFactory.RTCM1087();
+                sendCommandWithChecksum("RTCM1087", rtcCommand1087);
+                
+                byte[] rtcCommand1230 = CommandFactory.RTCM1230();
+                sendCommandWithChecksum("RTCM1230", rtcCommand1230);
+
+                byte[] rtcCommand1097 = CommandFactory.RTCM1097();
+                sendCommandWithChecksum("RTCM1097", rtcCommand1097);
+
+                byte[] rtcCommand1127 = CommandFactory.RTCM1127();
+                sendCommandWithChecksum("RTCM1127", rtcCommand1127);
+                
             } else {
                 handleClosedSerialPortError();
             }
