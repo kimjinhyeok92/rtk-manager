@@ -4,8 +4,16 @@ import com.fazecast.jSerialComm.SerialPort;
 
 import java.util.Arrays;
 
-public class DataRequest {
 
+public class DataRequest {
+	
+	 private MavlinkStream mavlinkStream;
+
+	    public DataRequest() {
+	        this.setMavlinkStream(new MavlinkStream());
+	        // 다른 초기화 작업 수행
+	    }
+	    
     private SerialPort comPort;
 
     public void setSerialport(String selectedSerial, int selectedBaudrate) {
@@ -108,32 +116,6 @@ public class DataRequest {
     }
     
 
- // parseRTCM, parseUBX, parseNMEA 메서드 
- private void parseRTCM(byte[] token) {
-     System.out.print("RTCM : ");
-     for (byte b : token) {
-         System.out.print(String.format("%02X ", b));
-     }
-     System.out.println();
- }
-
- private void parseUBX(byte[] token) {
-     System.out.print("UBX : ");
-     for (byte b : token) {
-         System.out.print(String.format("%02X ", b));
-     }
-     System.out.println();
- }
-
- private void parseNMEA(byte[] token) {
-     System.out.print("NMEA : ");
-     for (byte b : token) {
-         System.out.print(String.format("%02X ", b));
-     }
-     System.out.println();
- }
-
-
 	private void parseData(byte[] data) {
 	    int type = 0;
 	    int offset = 0;
@@ -151,14 +133,23 @@ public class DataRequest {
 	            offset = i - 1;
 	        }
 
-	        if (data[i - 1] == (byte) 0x24 && data[i] == (byte) 0x47) { // NMEA
+	        else if (data[i - 1] == (byte) 0x24 && data[i] == (byte) 0x47) { // NMEA
+	        	 if (type != 0) {
+		                token = Arrays.copyOfRange(data, offset, i - 1);
+		                processToken(type, token);
+		            }
 	            System.out.println(" ");
 	            System.out.println(i + " : NMEA  ");
 	            type = 1;
 	            offset = i - 1;
 	        }
 
-	        if (data[i - 1] == (byte) 0xD3) { // RTCM
+	        else if (data[i - 1] == (byte) 0xD3) { // RTCM
+	        	 if (type != 0) {
+		                token = Arrays.copyOfRange(data, offset, i - 1);
+		                processToken(type, token);
+		            }
+	        	System.out.println(" ");
 	            System.out.println(i + " : RTCM  ");
 	            type = 3;
 	            offset = i - 1;
@@ -185,6 +176,35 @@ public class DataRequest {
 	        // Add more cases if needed
 	    }
 	}
+	
+	// parseRTCM, parseUBX, parseNMEA 메서드 
+	 private void parseRTCM(byte[] token) {
+	     System.out.print("RTCM : ");
+	     for (byte b : token) {
+	         System.out.print(String.format("%02X ", b));
+	     }
+	     System.out.println();
+	     // RTCM 데이터를 MavlinkStream으로 전달
+	     MavlinkStream.processIncomingData(token);
+	 }
+
+	 private void parseUBX(byte[] token) {
+	     System.out.print("UBX : ");
+	     for (byte b : token) {
+	         System.out.print(String.format("%02X ", b));
+	     }
+	     System.out.println();
+	 }
+
+	 private void parseNMEA(byte[] token) {
+	     System.out.print("NMEA : ");
+	     for (byte b : token) {
+	         System.out.print(String.format("%02X ", b));
+	     }
+	     System.out.println();
+	 }
+
+
 
 
 	public void closePort() {
@@ -193,6 +213,18 @@ public class DataRequest {
             System.out.println("시리얼 포트가 닫혔습니다.");
         }
     }
+
+
+
+	public MavlinkStream getMavlinkStream() {
+		return mavlinkStream;
+	}
+
+
+
+	public void setMavlinkStream(MavlinkStream mavlinkStream) {
+		this.mavlinkStream = mavlinkStream;
+	}
 	}
 
 
