@@ -1,41 +1,59 @@
 package application;
 
+import java.util.Arrays;
+
 public class MavlinkStream {
 
     private static StringBuilder incompleteRtcmData;
 
+   // private static RTKDataSimulator dataSim = new RTKDataSimulator();
+    
     public MavlinkStream() {
-        this.incompleteRtcmData = new StringBuilder();
+        MavlinkStream.setIncompleteRtcmData(new StringBuilder());
     }
+   
 
     static void processIncomingData(byte[] data) {
         try {
+        //	byte[] data1 = RTKDataSimulator.main(null);
             int rtcmSizeThreshold = 180;
+            System.out.println("input Bytes : " + data.length);
 
-            for (byte b : data) {
-                incompleteRtcmData.append(String.format("%02X ", b));
-
-                if (incompleteRtcmData.length() >= rtcmSizeThreshold) {
-                    // 180바이트까지만 저장
-                    processCompleteRtcmData(incompleteRtcmData.substring(0, rtcmSizeThreshold));
-
-                    // StringBuilder 초기화
-                    incompleteRtcmData.setLength(0);
-                }
+            for (int i = 0; i < data.length; i += rtcmSizeThreshold) {
+                int endIndex = Math.min(i + rtcmSizeThreshold, data.length);
+                byte[] chunk = Arrays.copyOfRange(data, i, endIndex);
+                
+                processCompleteRtcmData(chunk);
             }
         } catch (Exception e) {
-            handleException("들어오는 데이터 처리 중 오류 발생", e);
+            handleException("Error processing incoming data", e);
         }
     }
 
-    public static void processCompleteRtcmData(String rtcmData) {
-        // 여기에서 완전한 RTCM 데이터를 저장하거나 처리하는 논리를 구현합니다.
-        // 예를 들어 파일에 저장하거나 다른 모듈로 보낼 수 있습니다.
-        System.out.println("완전한 RTCM 데이터: " + rtcmData);
+    public static void processCompleteRtcmData(byte[] rtcmData) {
+        // Here, you can implement logic to store or process each chunk of RTCM data.
+        // For demonstration purposes, we print the chunk as a hexadecimal string.
+        System.out.print("Complete RTCM Data: ");
+        for (byte b : rtcmData) {
+            System.out.print(String.format("%02X ", b));
+        }
+        System.out.println();
+
+        System.out.println("Bytes Written : " + rtcmData.length);
     }
 
     private static void handleException(String message, Exception e) {
         e.printStackTrace();
         System.err.println(message + ": " + e.getMessage());
     }
+
+
+	public static StringBuilder getIncompleteRtcmData() {
+		return incompleteRtcmData;
+	}
+
+
+	public static void setIncompleteRtcmData(StringBuilder incompleteRtcmData) {
+		MavlinkStream.incompleteRtcmData = incompleteRtcmData;
+	}
 }

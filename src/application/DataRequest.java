@@ -32,7 +32,7 @@ public class DataRequest {
         }
     }
 
-    
+
  
  // sendRTCM 메서드
     public void sendRTCM() {
@@ -47,6 +47,7 @@ public class DataRequest {
 
                 byte[] rtcCommand1087 = CommandFactory.RTCM1087();
                 sendCommandWithChecksum("RTCM1087", rtcCommand1087);
+                
                 
                 byte[] rtcCommand1230 = CommandFactory.RTCM1230();
                 sendCommandWithChecksum("RTCM1230", rtcCommand1230);
@@ -150,7 +151,7 @@ public class DataRequest {
 	            offset = i - 1;
 	        }
 
-	        else if (data[i - 1] == (byte) 0x24 && data[i] == (byte) 0x47) { // NMEA
+	    else if (data[i - 1] == (byte) 0x24 && data[i] == (byte) 0x47) { // NMEA
 	        	 if (type != 0) {
 		                token = Arrays.copyOfRange(data, offset, i - 1);
 		                processToken(type, token);
@@ -219,6 +220,7 @@ public class DataRequest {
 	         System.out.print(String.format("%02X ", b));
 	     }
 	     System.out.println();
+	    
 	 }
 
 
