@@ -51,6 +51,7 @@ public class MavlinkStream {
             for (byte b : payloadPacket.encodePacket()) {
                 System.out.print(String.format("%02X ", b));
             }
+            System.out.println(" ");
        
 
             

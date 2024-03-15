@@ -13,7 +13,7 @@ public class DataRequest {
 	        this.setMavlinkStream(new MavlinkStream());
 	        // 다른 초기화 작업 수행
 	    }
-	    
+
     private SerialPort comPort;
 
     public void setSerialport(String selectedSerial, int selectedBaudrate) {
@@ -33,7 +33,7 @@ public class DataRequest {
     }
 
 
- 
+
  // sendRTCM 메서드
     public void sendRTCM() {
         try {
@@ -47,8 +47,7 @@ public class DataRequest {
 
                 byte[] rtcCommand1087 = CommandFactory.RTCM1087();
                 sendCommandWithChecksum("RTCM1087", rtcCommand1087);
-                
-                
+                 
                 byte[] rtcCommand1230 = CommandFactory.RTCM1230();
                 sendCommandWithChecksum("RTCM1230", rtcCommand1230);
 
@@ -243,10 +242,3 @@ public class DataRequest {
         }
     }
 	}
-
-
-	
-
-
-
-	
