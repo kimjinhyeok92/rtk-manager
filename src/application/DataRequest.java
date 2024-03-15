@@ -224,6 +224,16 @@ public class DataRequest {
 	 }
 
 
+	 public MavlinkStream getMavlinkStream() {
+			return mavlinkStream;
+		}
+
+
+
+		public void setMavlinkStream(MavlinkStream mavlinkStream) {
+			this.mavlinkStream = mavlinkStream;
+		}
+		
 
 
 	public void closePort() {
@@ -232,19 +242,10 @@ public class DataRequest {
             System.out.println("시리얼 포트가 닫혔습니다.");
         }
     }
-
-
-
-	public MavlinkStream getMavlinkStream() {
-		return mavlinkStream;
 	}
 
 
-
-	public void setMavlinkStream(MavlinkStream mavlinkStream) {
-		this.mavlinkStream = mavlinkStream;
-	}
-	}
+	
 
 
 
