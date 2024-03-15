@@ -1,7 +1,5 @@
 package application;
 
-import java.util.Arrays;
-
 import com.MAVLink.MAVLinkPacket;
 import com.MAVLink.common.msg_gps_rtcm_data;
 
@@ -23,15 +21,21 @@ public class MavlinkStream {
             msg_gps_rtcm_data rtcmMessage = new msg_gps_rtcm_data();
                         
             short receivedFlags = 1;
-            short[] receivedData = new short[]{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22};
-            short receivedLen = (short) receivedData.length;
+         //   short[] receivedData = new short[]{0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22};
+            short receivedLen = (short) rtcmData.length; // RTCM 데이터의 길이를 설정
             
             
             rtcmMessage.flags = receivedFlags;
             rtcmMessage.len = receivedLen;
-            rtcmMessage.data = receivedData;
+            rtcmMessage.data = new short[rtcmData.length]; // 바이트 배열을 short 배열로 변환
 
-            rtcmMessage.sysid = 42;
+            
+            // 바이트 배열을 short 배열로 변환
+            for (int i = 0; i < rtcmData.length; i++) {
+                rtcmMessage.data[i] = (short) (rtcmData[i] & 0xFF); // 부호 확장을 피하기 위해 0xFF와의 비트 AND 연산을 수행
+            }
+            
+            rtcmMessage.sysid = 0;
             rtcmMessage.compid = 0;
             rtcmMessage.isMavlink2 = true;
 
@@ -41,9 +45,9 @@ public class MavlinkStream {
         //    byte[] mavlinkpacket = payloadPacket.encodePacket();
            
          // MAVLinkPacket 출력 시 패킷 내용을 확인할 수 있도록 수정
-            System.out.println("패키지 완료 : " + payloadPacket.unpack());
+            System.out.println("mavlink 언팩킹 완료 : " + payloadPacket.unpack());
             
-          //  System.out.println("패키지 완료 : " + mavlinkpacket);
+//            System.out.println("mavlink 팩킹 완료 : " + payloadPacket.encodePacket());
             for (byte b : payloadPacket.encodePacket()) {
                 System.out.print(String.format("%02X ", b));
             }
