@@ -32,12 +32,13 @@ public class MainController {
     private DataRequest dataRequest = new DataRequest();
     private Thread backgroundThread;
     private boolean isRunning = false;
+    private boolean isComportBaudrateDisabled = false;
 
     @FXML
     private void initialize() {
         initializeSerialPorts();
         initializeBaudrates();
-        startButton.setOnAction(event -> onControlButtonClick());
+        startButton.setOnAction(event -> onStartButtonClick());
     }
 
     private void initializeSerialPorts() {
@@ -53,10 +54,10 @@ public class MainController {
         baudrate2.getItems().addAll(9600, 115200);
     }
 
-    private void onControlButtonClick() {
+    private void onStartButtonClick() {
         if (isRunning) {
             stopBackgroundThread();
-            startButton.setText("Start");
+
         } else {
             String selectedSerial1 = serial1.getValue();
             Integer selectedBaudrate1 = baudrate1.getValue();
@@ -68,16 +69,31 @@ public class MainController {
                 dataRequest.sendRTCM();
                 dataRequest.sendSurveyin();
 
-                boolean isDataCheckBoxSelected = dataCheckBox.isSelected();
-                startBackgroundThread(isDataCheckBoxSelected);
-
-                startButton.setText("Stop");
+               // boolean isDataCheckBoxSelected = dataCheckBox.isSelected();
+                startBackgroundThread(isRunning);
+                
             } else {
                 System.out.println("Please select Serial and Baudrate.");
             }
         }
         isRunning = !isRunning;
+        
+        if (!isComportBaudrateDisabled) {
+            // comport와 baudrate 칸들을 비활성화한다.
+            serial1.setDisable(true);
+            baudrate1.setDisable(true);
+            isComportBaudrateDisabled = true;
+            startButton.setText("Stop");
+        } else {
+            // comport와 baudrate 칸들을 다시 활성화한다.
+            serial1.setDisable(false);
+            baudrate1.setDisable(false);
+            isComportBaudrateDisabled = false;
+            startButton.setText("Start");
+        }
     }
+    
+  
 
     private void initializeDataRequest(String selectedSerial, int selectedBaudrate) {
         dataRequest = new DataRequest();
