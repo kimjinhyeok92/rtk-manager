@@ -6,25 +6,26 @@ import java.util.Arrays;
 
 
 public class DataRequest {
-	
-	 private MavlinkStream mavlinkStream;
+	 public int sinkFlag;
+	 public MavlinkStream mavlinkStream;
 
 	    public DataRequest() {
 	        this.setMavlinkStream(new MavlinkStream());
+	        sinkFlag = 0;
 	        // 다른 초기화 작업 수행
 	    }
 
     private SerialPort comPort;
 
-    public void setSerialport(String selectedSerial, int selectedBaudrate) {
+    public void setSerialport(String selectedSerial1, int selectedBaudrate1) {
         try {
-            this.comPort = SerialPort.getCommPort(selectedSerial);
-            this.comPort.setBaudRate(selectedBaudrate);
+            this.comPort = SerialPort.getCommPort(selectedSerial1);
+            this.comPort.setBaudRate(selectedBaudrate1);
 
             if (comPort.openPort()) {
-                System.out.println("Serial port successfully opened.");
+                System.out.println("Serial1 port successfully opened.");
             } else {
-                System.err.println("Error opening the serial port.");
+                System.err.println("Error opening the serial1 port.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -202,7 +203,8 @@ public class DataRequest {
 	     }
 	     System.out.println();
 	     // RTCM 데이터를 MavlinkStream으로 전달
-	     MavlinkStream.processIncomingData(token);
+	     mavlinkStream.processIncomingData(token);
+	     if(sinkFlag==1) mavlinkStream.MavpacketDatatoLora();
 	 }
 
 	 private void parseUBX(byte[] token) {
@@ -222,18 +224,13 @@ public class DataRequest {
 	    
 	 }
 
-
 	 public MavlinkStream getMavlinkStream() {
 			return mavlinkStream;
 		}
 
-
-
 		public void setMavlinkStream(MavlinkStream mavlinkStream) {
 			this.mavlinkStream = mavlinkStream;
 		}
-		
-
 
 	public void closePort() {
         if (comPort != null && comPort.isOpen()) {

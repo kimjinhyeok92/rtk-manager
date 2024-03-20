@@ -1,7 +1,6 @@
 package application;
 
 import java.util.Arrays;
-
 import com.fazecast.jSerialComm.SerialPort;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -28,7 +27,8 @@ public class MainController {
     private Button startButton;
     @FXML
     private Label dataLabel;
-
+    
+    private MavlinkStream mavlinkStream = new MavlinkStream();
     private DataRequest dataRequest = new DataRequest();
     private Thread backgroundThread;
     private boolean isRunning = false;
@@ -39,6 +39,24 @@ public class MainController {
         initializeSerialPorts();
         initializeBaudrates();
         startButton.setOnAction(event -> onStartButtonClick());
+        
+        // dataCheckBox에 대한 리스너 추가
+        dataCheckBox.setOnAction(event -> {
+            if (dataCheckBox.isSelected()) {
+                // serial2와 baudrate2가 선택되었는지 확인
+                String selectedSerial2 = serial2.getValue();
+                Integer selectedBaudrate2 = baudrate2.getValue();
+                if (selectedSerial2 != null && selectedBaudrate2 != null) {
+                    // serial2와 baudrate2가 모두 선택된 경우 mavlinkStream을 초기화
+                    selectedBaudrate2 = selectedBaudrate2.intValue();
+                    initializeMavlinkStream(selectedSerial2, selectedBaudrate2);
+                } else {
+                    // serial2 또는 baudrate2가 선택되지 않은 경우 사용자에게 선택하도록 안내
+                    System.out.println("Serial2와 Baudrate2를 선택하세요.");
+                    dataCheckBox.setSelected(false); // 체크박스 해제
+                }
+            }
+        });
     }
 
     private void initializeSerialPorts() {
@@ -50,11 +68,11 @@ public class MainController {
     }
 
     private void initializeBaudrates() {
-        baudrate1.getItems().addAll(9600, 115200);
-        baudrate2.getItems().addAll(9600, 115200);
+        baudrate1.getItems().addAll(null,9600, 115200);
+        baudrate2.getItems().addAll(null,9600, 115200);
     }
 
-    private void onStartButtonClick() {
+    private void onStartButtonClick()  {
         if (isRunning) {
             stopBackgroundThread();
 
@@ -68,8 +86,9 @@ public class MainController {
 
                 dataRequest.sendRTCM();
                 dataRequest.sendSurveyin();
+         
 
-               // boolean isDataCheckBoxSelected = dataCheckBox.isSelected();
+                
                 startBackgroundThread(isRunning);
                 
             } else {
@@ -91,21 +110,41 @@ public class MainController {
             isComportBaudrateDisabled = false;
             startButton.setText("Start");
         }
+    
+    
+        
     }
     
-  
+
 
     private void initializeDataRequest(String selectedSerial, int selectedBaudrate) {
         dataRequest = new DataRequest();
         dataRequest.setSerialport(selectedSerial, selectedBaudrate);
     }
 
+    private void initializeMavlinkStream(String selectedSerial2, int selectedBaudrate) {
+    	mavlinkStream = dataRequest.mavlinkStream; //   new MavlinkStream();
+    	mavlinkStream.setSerialport(selectedSerial2, selectedBaudrate);
+    }
+
+    
     private void startBackgroundThread(boolean includeData) {
         backgroundThread = new Thread(() -> {
             try {
                 while (isRunning) {
                     String receivedData = dataRequest.readData();
                     Platform.runLater(() -> dataLabel.setText(receivedData));
+               
+                    
+           
+                    
+                    // dataCheckBox가 선택되었는지 그리고 mavlinkStream이 초기화되었는지 확인
+                    if (dataCheckBox.isSelected() && mavlinkStream != null) {
+                        // MavpacketDatatoLora 메서드 호출
+                    	dataRequest.sinkFlag = 1;
+                        //dataRequest.mavlinkStream.MavpacketDatatoLora();
+                    }
+                    
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
